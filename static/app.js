@@ -277,15 +277,20 @@ function mergeEvents(serverEvents) {
 }
 
 function isToday(timestamp) {
-    const d = new Date();
-    const pad = n => String(n).padStart(2,"0");
-    const today = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
-    return String(timestamp).slice(0,10) === today;
+    // Render stores event timestamps in UTC. Convert the timestamp to the
+    // browser's local date (IST for the intended deployment) before filtering.
+    const parsed = new Date(String(timestamp).replace(" ", "T") + "Z");
+    if (Number.isNaN(parsed.getTime())) return false;
+
+    const now = new Date();
+    return parsed.getFullYear() === now.getFullYear()
+        && parsed.getMonth() === now.getMonth()
+        && parsed.getDate() === now.getDate();
 }
 
 async function fetchServerEvents() {
     if (offlineMode) return [];
-    const response = await fetch("/api/events");
+    const response = await fetch(`/api/events?_=${Date.now()}`, {cache:"no-store"});
     if (!response.ok) throw new Error("Events failed");
     return await response.json();
 }
@@ -301,7 +306,8 @@ async function refreshStats() {
         return;
     }
 
-    const response = await fetch("/api/stats");
+    const response = await fetch(`/api/stats?_=${Date.now()}`, {cache:"no-store"});
+    if (!response.ok) throw new Error("Stats failed");
     const stats = await response.json();
 
     $("activeDevices").textContent = String(stats.active_devices).padStart(2,"0");
@@ -437,6 +443,7 @@ function showEventDetails(event) {
 }
 
 async function showTodayScans() {
+    await refreshStats();
     let serverEvents = [];
     try { serverEvents = await fetchServerEvents(); } catch {}
     const events = mergeEvents(serverEvents, getLocalEvents()).filter(e => isToday(e.timestamp));
@@ -466,6 +473,7 @@ async function showTodayScans() {
 }
 
 async function showThreats() {
+    await refreshStats();
     let serverEvents = [];
     try { serverEvents = await fetchServerEvents(); } catch {}
     const events = mergeEvents(serverEvents, getLocalEvents())
