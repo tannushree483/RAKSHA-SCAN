@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAKSHA-SCAN | RPF Security Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-mark">R</div>
+            <div>
+                <h1>RAKSHA-SCAN</h1>
+                <p>AI-POWERED RAILWAY THREAT DETECTION</p>
+            </div>
+        </div>
+
+        <div class="top-actions">
+            <div class="connection">
+                <span class="status-dot" id="connectionDot"></span>
+                <span id="connectionText">SYSTEM ONLINE</span>
+            </div>
+            <button class="outline-btn" id="offlineBtn">OFFLINE MODE</button>
+            <button class="danger-outline-btn" id="clearBtn">CLEAR LOG</button>
+        </div>
+    </header>
+
+    <main class="dashboard">
+
+        <section class="hero">
+            <div>
+                <span class="eyebrow">RPF SECURITY INTELLIGENCE</span>
+                <h2>Handheld for the Crowd.<br>Quadruped for the Risk.</h2>
+                <p>
+                    Multi-modal sensing + Edge AI + railway-context intelligence
+                    for real-time detection of narcotics and explosives.
+                </p>
+            </div>
+            <div class="hero-badge">
+                <span>HUMAN-IN-THE-LOOP</span>
+                <strong>AI ASSISTS • RPF DECIDES</strong>
+            </div>
+        </section>
+
+        <section class="kpi-grid">
+            <button class="kpi-card clickable" id="activeDevicesCard">
+                <span class="kpi-label">ACTIVE DEVICES</span>
+                <strong id="activeDevices">02</strong>
+                <small>Handheld + Quadruped</small>
+            </button>
+
+            <button class="kpi-card clickable" id="todayScansCard">
+                <span class="kpi-label">TODAY'S SCANS</span>
+                <strong id="todayScans">00</strong>
+                <small>Real-time event count</small>
+            </button>
+
+            <button class="kpi-card clickable" id="threatsCard">
+                <span class="kpi-label">THREATS FLAGGED</span>
+                <strong id="threatsFlagged">00</strong>
+                <small>Suspicious + High-Risk</small>
+            </button>
+
+            <div class="kpi-card">
+                <span class="kpi-label">CURRENT RISK</span>
+                <strong id="currentRisk">NORMAL</strong>
+                <small id="currentRiskScore">No active alert</small>
+            </div>
+        </section>
+
+        <section class="main-grid">
+
+            <div class="left-column">
+
+                <section class="card device-card">
+                    <div class="card-head">
+                        <div>
+                            <label>DEVICE 01</label>
+                            <h2>RAKSHA-SCAN Handheld</h2>
+                        </div>
+                        <span class="live-pill"><i></i> LIVE</span>
+                    </div>
+
+                    <div class="handheld-wrap">
+                        <div class="handheld-device status-ready" id="handheldDevice">
+                            <div class="device-top">
+                                <span>RAKSHA-SCAN</span>
+                                <span id="deviceTime">--:--:-- --</span>
+                            </div>
+
+                            <div class="device-divider"></div>
+
+                            <div class="device-screen">
+                                <div class="screen-status" id="deviceStatus">READY</div>
+
+                                <div class="device-telemetry">
+                                    <div><span>TEMPERATURE</span><b id="deviceTemp">--</b></div>
+                                    <div><span>HUMIDITY</span><b id="deviceHumidity">--</b></div>
+                                    <div><span>GAS LEVEL</span><b id="deviceGas">--</b></div>
+                                    <div><span>SIGNAL</span><b id="deviceSignal">--</b></div>
+                                    <div><span>THREAT SCORE</span><b id="deviceScore">--</b></div>
+                                    <div><span>GPS</span><b id="deviceGps">LOCKED</b></div>
+                                </div>
+
+                                <div class="device-target-row">
+                                    <span>TARGET</span><b id="deviceTarget">NARC + EXP</b>
+                                </div>
+                            </div>
+
+                            <div class="device-leds">
+                                <span class="device-led active"></span>
+                                <span class="device-led"></span>
+                                <span class="device-led"></span>
+                            </div>
+
+                            <div class="device-scan-button">SCAN</div>
+
+                            <div class="device-controller">
+                                <b>ESP32-S3</b>
+                                <span>Edge AI • Wi-Fi Connected</span>
+                            </div>
+                        </div>
+
+                        <div class="device-copy">
+                            <h3>Multi-Modal Detection Core</h3>
+                            <p>
+                                Continuous environmental and trace-signature sensing
+                                with camera observation and Edge AI.
+                            </p>
+
+                            <div class="mini-specs">
+                                <div><b>AI</b><span>Edge Processing</span></div>
+                                <div><b>GPS</b><span>Location Tagging</span></div>
+                                <div><b>IMU</b><span>Motion Context</span></div>
+                                <div><b>CAM</b><span>Visual Evidence</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card scan-card">
+                    <div class="card-head">
+                        <div>
+                            <label>DETECTION CONTROL</label>
+                            <h2>Configure Judge Demo</h2>
+                        </div>
+                        <span class="mode-tag">EDGE AI</span>
+                    </div>
+
+                    <div class="control-row">
+                        <div class="control-group">
+                            <span>DETECTION TARGET</span>
+                            <select id="targetSelect">
+                                <option>Narcotics + Explosives</option>
+                                <option>Narcotics</option>
+                                <option>Explosives</option>
+                            </select>
+                        </div>
+
+                        <div class="control-group">
+                            <span>RAILWAY MODE</span>
+                            <select id="modeSelect">
+                                <option>Platform</option>
+                                <option>Luggage</option>
+                                <option>Coach</option>
+                                <option>Yard</option>
+                                <option>Under-Coach</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="scenario-title">SELECT EXPECTED RESULT</div>
+                    <div class="scenario-grid">
+                        <button class="scenario-btn selected normal" data-scenario="normal">
+                            <b>NORMAL</b>
+                            <span>Safe environment</span>
+                        </button>
+                        <button class="scenario-btn suspicious" data-scenario="suspicious">
+                            <b>SUSPICIOUS</b>
+                            <span>Needs verification</span>
+                        </button>
+                        <button class="scenario-btn high-risk" data-scenario="high-risk">
+                            <b>HIGH-RISK</b>
+                            <span>Immediate attention</span>
+                        </button>
+                    </div>
+
+                    <button class="run-btn" id="runScan">
+                        <span>▶</span> RUN SELECTED SCAN
+                    </button>
+
+                    <div class="judge-note">
+                        <b>Judge demo:</b> Select NORMAL / SUSPICIOUS / HIGH-RISK and run.
+                        The dashboard will show only the selected outcome.
+                    </div>
+                </section>
+
+                <section class="card workflow-card">
+                    <div class="card-head">
+                        <div>
+                            <label>SECURITY WORKFLOW</label>
+                            <h2>Detect → Analyse → Verify → Respond</h2>
+                        </div>
+                    </div>
+
+                    <div class="workflow">
+                        <div class="flow-item active"><b>01</b><span>DETECT</span><small>Multi-modal sensors</small></div>
+                        <div class="flow-line"></div>
+                        <div class="flow-item"><b>02</b><span>ANALYSE</span><small>Edge AI fusion</small></div>
+                        <div class="flow-line"></div>
+                        <div class="flow-item"><b>03</b><span>VERIFY</span><small>Quadruped / RPF</small></div>
+                        <div class="flow-line"></div>
+                        <div class="flow-item"><b>04</b><span>RESPOND</span><small>Alert + evidence</small></div>
+                    </div>
+                </section>
+
+            </div>
+
+            <div class="right-column">
+
+                <section class="card robot-card">
+                    <div class="card-head">
+                        <div>
+                            <label>DEVICE 02</label>
+                            <h2>Quadruped Verification</h2>
+                        </div>
+                        <span class="standby-pill">STANDBY</span>
+                    </div>
+
+                    <div class="robot-visual">
+                        <div class="robot-body">
+                            <div class="robot-camera"></div>
+                            <div class="robot-lidar"></div>
+                            <div class="robot-leg l1"></div>
+                            <div class="robot-leg l2"></div>
+                            <div class="robot-leg l3"></div>
+                            <div class="robot-leg l4"></div>
+                        </div>
+                    </div>
+
+                    <div class="robot-text">
+                        <p>
+                            Remote close-range inspection for under-coach,
+                            yard, tunnel and other restricted areas.
+                        </p>
+                        <button class="secondary-btn" id="verifyRobot">SEND FOR VERIFICATION</button>
+                    </div>
+                </section>
+
+                <section class="card telemetry-card">
+                    <div class="card-head">
+                        <div>
+                            <label>LIVE TELEMETRY</label>
+                            <h2>Sensor Fusion</h2>
+                        </div>
+                        <span class="pulse">●</span>
+                    </div>
+
+                    <div class="telemetry-grid">
+                        <div class="telemetry-item"><span>TEMPERATURE</span><b id="temperature">-- °C</b></div>
+                        <div class="telemetry-item"><span>HUMIDITY</span><b id="humidity">-- %</b></div>
+                        <div class="telemetry-item"><span>GAS / VOC</span><b id="gasLevel">--</b></div>
+                        <div class="telemetry-item"><span>SIGNAL</span><b id="signalLevel">--</b></div>
+                        <div class="telemetry-item wide"><span>GPS</span><b id="gpsValue">Waiting...</b></div>
+                    </div>
+                </section>
+
+                <section class="card ai-card">
+                    <div class="card-head">
+                        <div>
+                            <label>EDGE AI THREAT ASSESSMENT</label>
+                            <h2>Risk Classification</h2>
+                        </div>
+                    </div>
+
+                    <div class="risk-meter">
+                        <div class="risk-top">
+                            <span>THREAT SCORE</span>
+                            <strong id="threatScore">--</strong>
+                        </div>
+                        <div class="meter"><span id="threatMeter"></span></div>
+                        <div class="meter-labels"><span>LOW</span><span>MEDIUM</span><span>HIGH</span></div>
+                    </div>
+
+                    <div class="classification" id="classification">
+                        <span>●</span>
+                        <div>
+                            <b>READY FOR SCAN</b>
+                            <small>Select a scenario and run detection.</small>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card latest-card">
+                    <div class="card-head">
+                        <div>
+                            <label>LATEST DETECTION</label>
+                            <h2>Event Details</h2>
+                        </div>
+                        <button class="text-btn" id="viewLatest">VIEW DETAILS</button>
+                    </div>
+
+                    <div class="latest-content" id="latestContent">
+                        <div class="empty-state">
+                            <b>No detection yet</b>
+                            <span>Run a scan to populate this panel.</span>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </section>
+
+        <section class="card map-card">
+            <div class="card-head">
+                <div>
+                    <label>HOTSPOT MAP</label>
+                    <h2>Railway Security Location</h2>
+                </div>
+                <span class="map-live">LIVE</span>
+            </div>
+
+            <div id="realMap" class="real-map"></div>
+
+            <div class="map-info">
+                <span id="mapStatus">Waiting for detection...</span>
+                <button id="centerMap">CENTER</button>
+            </div>
+        </section>
+
+        <section class="bottom-grid">
+
+            <section class="card health-card">
+                <div class="card-head">
+                    <div>
+                        <label>DEVICE HEALTH</label>
+                        <h2>Fleet Status</h2>
+                    </div>
+                    <button class="text-btn" id="viewDevices">VIEW ALL</button>
+                </div>
+                <div id="deviceHealthList" class="health-list"></div>
+            </section>
+
+            <section class="card offline-card">
+                <div class="card-head">
+                    <div>
+                        <label>OFFLINE-FIRST</label>
+                        <h2>Resilient Connectivity</h2>
+                    </div>
+                    <span class="secure-pill">SECURE</span>
+                </div>
+                <div class="offline-flow">
+                    <div><b>01</b><span>Detect locally</span></div>
+                    <div><b>02</b><span>Encrypt & store</span></div>
+                    <div><b>03</b><span>Auto-sync later</span></div>
+                </div>
+                <button class="secondary-btn" id="syncBtn">SYNC STORED EVENTS</button>
+                <p class="offline-status" id="offlineStatus">Local event storage ready.</p>
+            </section>
+
+        </section>
+
+        <section class="card log-card">
+            <div class="card-head">
+                <div>
+                    <label>EVENT LOG</label>
+                    <h2>Recent Security Events</h2>
+                </div>
+                <button class="text-btn" id="refreshLog">REFRESH</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>TIME</th>
+                            <th>DEVICE</th>
+                            <th>MODE</th>
+                            <th>TARGET</th>
+                            <th>STATUS</th>
+                            <th>SCORE</th>
+                            <th>SYNC</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventTable">
+                        <tr>
+                            <td colspan="7" class="table-empty">No events recorded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <span>RAKSHA-SCAN • SIH 2026 • PS 26026</span>
+        <span>Prototype for demonstration • Human verification required</span>
+    </footer>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+        <button class="modal-close" id="modalClose">×</button>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
