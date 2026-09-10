@@ -154,16 +154,33 @@ def api_events():
 
 @app.get("/api/stats")
 def api_stats():
+    # Events are stored using the server's local timestamp. Render runs in UTC,
+    # while the dashboard is intended for Indian Railways (IST). Calculate the
+    # current IST day and convert its boundaries to UTC for reliable counting.
+    from datetime import timezone, timedelta
+
+    ist = timezone(timedelta(hours=5, minutes=30))
+    now_ist = datetime.now(ist)
+    start_ist = now_ist.replace(hour=0, minute=0, second=0, microsecond=0)
+    next_ist = start_ist + timedelta(days=1)
+    start_utc = start_ist.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    next_utc = next_ist.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+
     conn = get_db()
-    total = conn.execute("SELECT COUNT(*) AS c FROM events").fetchone()["c"]
+    today = conn.execute("""
+        SELECT COUNT(*) AS c FROM events
+        WHERE timestamp >= ? AND timestamp < ?
+    """, (start_utc, next_utc)).fetchone()["c"]
     threats = conn.execute("""
         SELECT COUNT(*) AS c FROM events
-        WHERE status IN ('Suspicious', 'High-Risk')
-    """).fetchone()["c"]
+        WHERE timestamp >= ? AND timestamp < ?
+          AND status IN ('Suspicious', 'High-Risk')
+    """, (start_utc, next_utc)).fetchone()["c"]
     high_risk = conn.execute("""
         SELECT COUNT(*) AS c FROM events
-        WHERE status = 'High-Risk'
-    """).fetchone()["c"]
+        WHERE timestamp >= ? AND timestamp < ?
+          AND status = 'High-Risk'
+    """, (start_utc, next_utc)).fetchone()["c"]
     latest = conn.execute("""
         SELECT * FROM events ORDER BY id DESC LIMIT 1
     """).fetchone()
@@ -171,7 +188,7 @@ def api_stats():
 
     return jsonify({
         "active_devices": 2,
-        "today_scans": total,
+        "today_scans": today,
         "threats_flagged": threats,
         "high_risk": high_risk,
         "current_risk": dict(latest) if latest else None
